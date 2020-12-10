@@ -7,15 +7,15 @@ import javax.mail.Session
 import javax.mail.Store
 
 class MeetingManager {
-    fun getMeetingsFromMailbox(host: String?, port: String?, login: String?, password: String?): MutableList<Meeting>{
-        val meetings = mutableListOf<Meeting>()
-        val session: Session = getSession(host, port)
-        val store: Store = session.getStore("imap")
+    fun getMeetingsFromMailbox(host: String?, port: String?, login: String?, password: String?): List<IcsMeeting?>{
+        val session = getSession(host, port)
+        val store = session.getStore("imap")
         store.connect(login, password)
-        val folder: Folder = store.getFolder("INBOX")
+        val folder = store.getFolder("INBOX")
         folder.open(Folder.READ_ONLY)
         val count = folder.messageCount
 
+        val meetings = mutableListOf<IcsMeeting?>()
         for (i in 1..count) {
             val message = folder.getMessage(i)
             val attachmentManager = AttachmentManager(message)
@@ -24,9 +24,11 @@ class MeetingManager {
                 val icsFileManager = IcsFileManager(it)
                 try {
                     val meeting = icsFileManager.getMeeting()
-                    meetings.add(meeting)
+                    if(meeting != null) {
+                        meetings.add(meeting)
+                    }
                 } catch (ex: Exception){
-
+                    println(ex)
                 }
             }
         }
