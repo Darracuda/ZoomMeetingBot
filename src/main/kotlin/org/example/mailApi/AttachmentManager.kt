@@ -7,22 +7,22 @@ import javax.mail.Part
 import javax.mail.internet.MimeBodyPart
 
 class AttachmentManager(private val message: Message) {
-    fun getAttachments(): MutableList<Attachment>{
-        val attachments = mutableListOf<Attachment>()
+
+    fun getAttachments(): List<Attachment>{
         val contentType: String = message.contentType
-        if (contentType.startsWith("multipart", ignoreCase = true)) {
-            val multiPart = message.content as Multipart
-            for (i in 0 until multiPart.count) {
-                val part = multiPart.getBodyPart(i) as MimeBodyPart
-                if (part.disposition.equals(Part.ATTACHMENT, ignoreCase = true)) {
-                    val fileName= part.fileName
-                    val contentStream = part.content as BASE64DecoderStream
-                    val content = contentStream.readAllBytes()
-                    val attachment = Attachment(fileName, content)
-                    attachments.add(attachment)
-                }
-            }
+        if(!contentType.startsWith("multipart", ignoreCase = true)){
+            return emptyList()
         }
-        return attachments
+
+        val multiPart = message.content as Multipart
+        return (0 until multiPart.count)
+            .map{ i -> multiPart.getBodyPart(i) as MimeBodyPart}
+            .filter { part -> part.disposition.equals(Part.ATTACHMENT, ignoreCase = true) }
+            .map{ part ->
+                val fileName = part.fileName
+                val contentStream = part.content as BASE64DecoderStream
+                val content = contentStream.readAllBytes()
+                Attachment(fileName, content)
+            }
     }
 }
