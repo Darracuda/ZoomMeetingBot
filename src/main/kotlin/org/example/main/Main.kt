@@ -21,8 +21,8 @@ class Main {
             val mailboxLogin = ""
             val mailboxPassword = ""
 
-            val zoomLogin = "diane.kolpakova@gmail.com"
-            val zoomPassword = "123pas"
+            val zoomLogin = ""
+            val zoomPassword = ""
             val zoomToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6ImctQ0M4VUdzVFdDNHpmRi0wbkdobWciLCJleHAiOjE2MDgyMzMxNzMsImlhdCI6MTYwNzYyODM3NH0.ML7XBrj4lvdoXwgofQBKVSdzcsvyz7MGvXBJbdn5fSs"
 
             val meetingManager = MeetingManager()
