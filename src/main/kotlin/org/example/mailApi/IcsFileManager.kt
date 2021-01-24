@@ -9,6 +9,10 @@ import net.fortuna.ical4j.model.property.Attendee
 import net.fortuna.ical4j.model.property.DtEnd
 import net.fortuna.ical4j.model.property.DtStart
 import net.fortuna.ical4j.util.MapTimeZoneCache
+import org.example.main.Main
+import org.example.main.Main.Companion.toLocal
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.StringReader
 import java.time.Duration
 import java.time.ZonedDateTime
@@ -16,10 +20,14 @@ import java.time.ZonedDateTime
 class IcsFileManager(private val attachment: Attachment) {
 
     fun getMeeting(): IcsMeeting? {
-        if (!attachment.name.endsWith(".ics", ignoreCase = true) || attachment.content == null) {
+        val logger: Logger = LoggerFactory.getLogger(Main::class.java)
+
+        if (!attachment.name.endsWith(".ics", ignoreCase = true)) {
+            //logger.info("This message does not contain .ics file attachment")
             return null
         }
 
+        logger.info("This message contains .ics file attachment. Started receiving meeting info ...")
         System.setProperty("net.fortuna.ical4j.timezone.cache.impl", MapTimeZoneCache::class.java.name)
         val content = String(attachment.content, charset("UTF-8"))
         val reader = StringReader(content)
@@ -32,7 +40,9 @@ class IcsFileManager(private val attachment: Attachment) {
             .getProperties<Attendee>(Property.ATTENDEE)
             .filter { it.calAddress.scheme.equals("MAILTO", ignoreCase = true) }
             .map { x -> x.calAddress.schemeSpecificPart }
+        logger.info("Found ${attendees.size} attendees with MAILTO scheme: $attendees")
         val organizer = event.organizer.calAddress.schemeSpecificPart
+        logger.info("Found organizer: $organizer")
 
         val dur = calculateDuration(event.startDate, event.endDate, event.duration)
         val duration = Duration.ofSeconds(dur.seconds.toLong()) +
@@ -41,6 +51,8 @@ class IcsFileManager(private val attachment: Attachment) {
 
         val startDateTime = event.startDate?.date?.toInstant()
         val meeting = IcsMeeting(subject, description, startDateTime, duration, organizer, attendees)
+        logger.info("Received meeting info from .ics file complete")
+        logger.info("Meeting subject: $subject, description: $description, start time: ${toLocal(startDateTime)}, duration: $organizer, attendees: $attendees")
         return meeting
     }
 

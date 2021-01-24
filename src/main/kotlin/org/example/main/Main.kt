@@ -14,39 +14,26 @@ class Main {
         @JvmStatic
         fun main(args: Array<String>) {
             val logger: Logger = LoggerFactory.getLogger(Main::class.java)
-            logger.error("Error")
+            logger.info("Program started")
 
             val mailboxHost = "imap.gmail.com"
             val mailboxPort = "993"
             val mailboxLogin = ""
             val mailboxPassword = ""
 
-            val zoomLogin = "diane.kolpakova@gmail.com"
-            val zoomPassword = "123pas"
+            val zoomLogin = ""
+            val zoomPassword = ""
             val zoomToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6ImctQ0M4VUdzVFdDNHpmRi0wbkdobWciLCJleHAiOjE2MDgyMzMxNzMsImlhdCI6MTYwNzYyODM3NH0.ML7XBrj4lvdoXwgofQBKVSdzcsvyz7MGvXBJbdn5fSs"
 
             val meetingManager = MeetingManager()
+            logger.info("Starting meetings download")
             val meetings = meetingManager.getMeetingsFromMailbox(
                 mailboxHost,
                 mailboxPort,
                 mailboxLogin,
                 mailboxPassword
             )
-            for(meeting in meetings){
-                println(
-                    meeting?.subject
-                            + " \n     ***** \n"
-                            + meeting?.description
-                            + " \n     ***** \n"
-                            + toLocal(meeting?.startTime)
-                            + " \n     ***** \n"
-                            + meeting?.duration
-                            + " \n     ***** \n"
-                            + meeting?.attendees
-                            + " \n\n\n\n\n     #############################     \n\n\n\n\n"
-                )
-
-            }
+            logger.info("Meeting download complete")
 
             for(meeting in meetings){
                 val apiInstance = MeetingsApi()
@@ -74,22 +61,24 @@ class Main {
                 )
                 try {
                     val response = apiInstance.createMeeting(zoomToken, zoomLogin, request)
-                    println("start time = " + toLocal(response.start_time))
-                    println(response)
+                    logger.info("Meeting created")
+                    logger.info("start time: ${toLocal(response.start_time)}")
+                    logger.info("Response: $response")
                 } catch (e: ClientException) {
-                    println("4xx response calling MeetingsApi#meetingCreate")
                     e.printStackTrace()
+                    logger.error("4xx response calling MeetingsApi#meetingCreate")
                 } catch (e: ServerException) {
-                    println("5xx response calling MeetingsApi#meetingCreate")
                     e.printStackTrace()
+                    logger.error("5xx response calling MeetingsApi#meetingCreate")
+
                 } catch (e: Exception) {
-                    println("error")
+                    logger.error("Exception: $e")
                     e.printStackTrace()
                 }
             }
         }
 
-        private fun toLocal(input: Instant?): LocalDateTime? {
+        fun toLocal(input: Instant?): LocalDateTime? {
             return LocalDateTime.ofInstant(input, ZoneOffset.UTC)
         }
     }

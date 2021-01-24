@@ -8,5 +8,4 @@ class Meeting(
     val agenda: String? = null,
     val startTime: ZonedDateTime? = null,
     val duration: Duration? = null,
-) {
-}
+)
