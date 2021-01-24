@@ -49,7 +49,7 @@ class IcsFileManager(private val attachment: Attachment) {
                 Duration.ofMinutes(dur.minutes.toLong()) +
                 Duration.ofHours(dur.hours.toLong())
 
-        val startDateTime = event.startDate?.date?.toInstant()
+         val startDateTime = event.startDate?.date?.toInstant()
         val meeting = IcsMeeting(subject, description, startDateTime, duration, organizer, attendees)
         logger.info("Received meeting info from .ics file complete")
         logger.info("Meeting subject: $subject, description: $description, start time: ${toLocal(startDateTime)}, duration: $organizer, attendees: $attendees")

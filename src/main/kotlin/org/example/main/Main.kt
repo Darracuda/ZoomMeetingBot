@@ -1,5 +1,6 @@
 package org.example.main
 
+import org.example.mailApi.EmailSender
 import org.example.mailApi.MeetingManager
 import org.example.zoomApi.MeetingsApi
 import org.example.zoomApi.infrastructure.ClientException
@@ -22,8 +23,8 @@ class Main {
             val mailboxPassword = ""
 
             val zoomLogin = ""
-            val zoomPassword = ""
-            val zoomToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6ImctQ0M4VUdzVFdDNHpmRi0wbkdobWciLCJleHAiOjE2MDgyMzMxNzMsImlhdCI6MTYwNzYyODM3NH0.ML7XBrj4lvdoXwgofQBKVSdzcsvyz7MGvXBJbdn5fSs"
+            val zoomPassword = "123pas"
+            val zoomToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6ImctQ0M4VUdzVFdDNHpmRi0wbkdobWciLCJleHAiOjE2MTIxMTQ0NjYsImlhdCI6MTYxMTUwOTY2N30.tMpE-9tKK9iWyPtUJnW48JhOibLRoBA1xAz1Hea97fs"
 
             val meetingManager = MeetingManager()
             logger.info("Starting meetings download")
@@ -64,6 +65,9 @@ class Main {
                     logger.info("Meeting created")
                     logger.info("start time: ${toLocal(response.start_time)}")
                     logger.info("Response: $response")
+                    val emailSender = EmailSender()
+                    emailSender.sendMessage(meeting!!.attendees.toTypedArray())
+                    logger.info("Message sent")
                 } catch (e: ClientException) {
                     e.printStackTrace()
                     logger.error("4xx response calling MeetingsApi#meetingCreate")

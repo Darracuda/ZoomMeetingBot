@@ -59,13 +59,13 @@ class MeetingManager {
         properties["mail.imap.host"] = host
         properties["mail.imap.port"] = port
         // SSL setting
-        properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory")
-        properties.setProperty("mail.imap.socketFactory.fallback", "false")
-        properties.setProperty("mail.imap.socketFactory.port", port)
-        properties.setProperty("mail.mime.base64.ignoreerrors", "true")
-        properties.setProperty("mail.imap.partialfetch", "false")
+        properties["mail.imap.socketFactory.class"] = "javax.net.ssl.SSLSocketFactory"
+        properties["mail.imap.socketFactory.fallback"] = "false"
+        properties["mail.imap.socketFactory.port"] = port
+        properties["mail.mime.base64.ignoreerrors"] = "true"
+        properties["mail.imap.partialfetch"] = "false"
 
-        return Session.getDefaultInstance(properties)
+        return Session.getInstance(properties)
     }
 
 
