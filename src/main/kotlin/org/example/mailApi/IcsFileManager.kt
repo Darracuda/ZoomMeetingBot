@@ -15,7 +15,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.StringReader
 import java.time.Duration
-import java.time.ZonedDateTime
 
 class IcsFileManager(private val attachment: Attachment) {
 
@@ -23,7 +22,6 @@ class IcsFileManager(private val attachment: Attachment) {
         val logger: Logger = LoggerFactory.getLogger(Main::class.java)
 
         if (!attachment.name.endsWith(".ics", ignoreCase = true)) {
-            //logger.info("This message does not contain .ics file attachment")
             return null
         }
 
