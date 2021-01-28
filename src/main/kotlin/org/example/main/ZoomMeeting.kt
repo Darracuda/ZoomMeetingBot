@@ -1,11 +1,13 @@
 package org.example.main
 
 import java.time.Duration
-import java.time.ZonedDateTime
+import java.time.Instant
 
 class ZoomMeeting(
-    val topic: String? = null,
-    val agenda: String? = null,
-    val startTime: ZonedDateTime? = null,
-    val duration: Duration? = null,
+    val topic: String,
+    val agenda: String?,
+    val startTime: Instant,
+    val duration: Duration,
+    val joinUrl: String,
+    var attendees: List<String>?,
 )

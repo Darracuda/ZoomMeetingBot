@@ -2,6 +2,7 @@ package org.example.mailApi
 
 import com.sun.mail.smtp.SMTPTransport
 import org.example.main.Main
+import org.example.main.ZoomMeeting
 import org.example.settings.SettingsManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -15,38 +16,39 @@ import javax.mail.search.FlagTerm
 
 class MailboxManager(private val settingsManager: SettingsManager){
     private val logger: Logger = LoggerFactory.getLogger(Main::class.java)
-    private val propFile = File(javaClass.classLoader.getResource("config.properties").file)
+    private val settingsFile = File(javaClass.classLoader.getResource("config.properties").file)
 
-    fun sendMessage(meeting: IcsMeeting ){
+    fun sendMessage(zoomMeeting: ZoomMeeting){
         val prop = Properties()
-        FileInputStream(propFile).use { prop.load(it) }
+        FileInputStream(settingsFile).use { prop.load(it) }
 
-        val settingsManager = SettingsManager(propFile)
-        settingsManager.loadProp()
+        val settings = SettingsManager.create(settingsFile)
 
-        val smtpHost = settingsManager.smtpHost
-        val smtpPort = settingsManager.smtpPort
-        val smtpLogin = settingsManager.smtpLogin
-        val smtpPassword = settingsManager.smtpPassword
-        val emailAddressFrom = settingsManager.smtpEmailAddressFrom
+        val smtpHost = settings.smtp.host
+        val smtpPort = settings.smtp.port
+        val smtpLogin = settings.smtp.login
+        val smtpPassword = settings.smtp.password
+        val emailAddressFrom = settings.message.from
         val emailAddressesToCC = emptyArray<String>()
 
-        val emailSubject = meeting.subject
-        val emailText = meeting.description
-        val emailToAddresses = meeting.attendees.toTypedArray()
+        val emailSubject = zoomMeeting.topic
+        val emailText = zoomMeeting.agenda
+        val emailToAddresses = zoomMeeting.attendees?.toTypedArray()
+
+        val joinUrl = zoomMeeting.joinUrl
 
         val session = getSmtpSession(smtpHost, smtpPort)
         val msg: Message = MimeMessage(session)
 
         try {
             msg.setFrom(InternetAddress(emailAddressFrom))
-            msg.setRecipients(Message.RecipientType.TO, emailToAddresses.map { a -> InternetAddress(a) }.toTypedArray())
+            msg.setRecipients(Message.RecipientType.TO, emailToAddresses?.map { a -> InternetAddress(a) }?.toTypedArray())
             msg.setRecipients(
                 Message.RecipientType.CC,
                 emailAddressesToCC.map { a -> InternetAddress(a) }.toTypedArray()
             )
             msg.subject = emailSubject
-            msg.setText(emailText)
+            msg.setText("$emailText\n Join Url: $joinUrl")
             msg.sentDate = Date()
             val t = session.getTransport("smtp") as SMTPTransport
             t.connect(smtpHost, smtpLogin, smtpPassword)
@@ -59,10 +61,10 @@ class MailboxManager(private val settingsManager: SettingsManager){
     }
 
     fun receiveMessages(): Array<Message> {
-        val host = settingsManager.imapHost
-        val port = settingsManager.imapPort
-        val login = settingsManager.imapLogin
-        val password = settingsManager.imapPassword
+        val host = settingsManager.imap.host
+        val port = settingsManager.imap.port
+        val login = settingsManager.imap.login
+        val password = settingsManager.imap.password
 
         logger.info("Creating mail session...")
         val session = getImapSession(host, port)

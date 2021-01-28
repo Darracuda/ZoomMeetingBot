@@ -6,7 +6,7 @@ import org.example.zoomApi.infrastructure.*
 
 class MeetingsApi(basePath: String = "https://api.zoom.us/v2") : ApiClient(basePath) {
     @Suppress("UNCHECKED_CAST")
-    fun createMeeting(token: String?, userId: String?, request: CreateMeetingRequest) : CreateMeetingResponse {
+    fun createMeeting(token: String, userId: String, request: CreateMeetingRequest) : CreateMeetingResponse {
         val acceptsHeaders: Map<String,String> = mapOf("Accept" to "application/json, application/xml")
         val tokenHeaders: Map<String,String> = mapOf("Authorization" to "Bearer $token")
         val headers: MutableMap<String,String> = mutableMapOf()
@@ -15,7 +15,7 @@ class MeetingsApi(basePath: String = "https://api.zoom.us/v2") : ApiClient(baseP
 
         val config = RequestConfig(
             RequestMethod.POST,
-            "/users/{userId}/meetings".replace("{"+"userId"+"}", userId.toString()),
+            "/users/${userId}/meetings",
             query = mapOf(),
             headers = headers
         )

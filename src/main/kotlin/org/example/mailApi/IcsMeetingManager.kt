@@ -7,12 +7,12 @@ import java.lang.Exception
 import javax.mail.Flags
 
 class IcsMeetingManager(private val mailboxManager: MailboxManager) {
-    fun getMeetingsFromMailbox(): List<IcsMeeting?>{
+    fun getMeetingsFromMailbox(): List<IcsMeeting>{
         val logger: Logger = LoggerFactory.getLogger(Main::class.java)
         val messages = mailboxManager.receiveMessages()
         val unreadEmailCount = messages.size
         logger.info("Received $unreadEmailCount new email messages")
-        val meetings = mutableListOf<IcsMeeting?>()
+        val meetings = mutableListOf<IcsMeeting>()
         for (message in messages) {
             val attachmentManager = AttachmentManager(message)
             val attachments = attachmentManager.getAttachments()
