@@ -18,7 +18,7 @@ data class CreateMeetingRequest(
         @Json(name = "1")
         instantMeeting(1),
         @Json(name = "2")
-        scheduledMeeting(2),
+        ScheduledMeeting(2),
         @Json(name = "3")
         recurringMeetingWithNoFixedTime(3),
         @Json(name = "8")

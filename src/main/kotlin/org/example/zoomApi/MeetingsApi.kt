@@ -15,7 +15,7 @@ class MeetingsApi(basePath: String = "https://api.zoom.us/v2") : ApiClient(baseP
 
         val config = RequestConfig(
             RequestMethod.POST,
-            "/users/{userId}/meetings".replace("{"+"userId"+"}", userId),
+            "/users/${userId}/meetings",
             query = mapOf(),
             headers = headers
         )

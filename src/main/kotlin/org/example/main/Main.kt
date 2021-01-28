@@ -1,12 +1,15 @@
 package org.example.main
 
-import org.example.mailApi.MeetingManager
+import org.example.mailApi.IcsMeetingManager
+import org.example.mailApi.MailboxManager
+import org.example.settings.SettingsManager
 import org.example.zoomApi.MeetingsApi
 import org.example.zoomApi.infrastructure.ClientException
 import org.example.zoomApi.infrastructure.ServerException
 import org.example.zoomApi.models.CreateMeetingRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.time.*
 
 class Main {
@@ -16,46 +19,41 @@ class Main {
             val logger: Logger = LoggerFactory.getLogger(Main::class.java)
             logger.info("Program started")
 
-            val mailboxHost = "imap.gmail.com"
-            val mailboxPort = "993"
-            val mailboxLogin = ""
-            val mailboxPassword = ""
+            val settingsFile = File(javaClass.classLoader.getResource("config.properties").file)
+            val settings = SettingsManager.create(settingsFile)
 
-            val zoomLogin = ""
-            val zoomPassword = ""
-            val zoomToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6ImctQ0M4VUdzVFdDNHpmRi0wbkdobWciLCJleHAiOjE2MDgyMzMxNzMsImlhdCI6MTYwNzYyODM3NH0.ML7XBrj4lvdoXwgofQBKVSdzcsvyz7MGvXBJbdn5fSs"
+            val zoomLogin = settings.zoom.login
+            val zoomPassword = settings.zoom.password
+            val zoomToken = settings.zoom.token
 
-            val meetingManager = MeetingManager()
+            val mailboxManager = MailboxManager(settings)
+
+            val icsMeetingManager = IcsMeetingManager(mailboxManager)
             logger.info("Starting meetings download")
-            val meetings = meetingManager.getMeetingsFromMailbox(
-                mailboxHost,
-                mailboxPort,
-                mailboxLogin,
-                mailboxPassword
-            )
+            val icsMeetings = icsMeetingManager.getMeetingsFromMailbox()
             logger.info("Meeting download complete")
 
-            for(meeting in meetings){
+            for(icsMeeting in icsMeetings){
                 val apiInstance = MeetingsApi()
                 val meetingSettings = CreateMeetingRequest.MeetingSettings(
-                    host_video = true,
-                    participant_video = true,
-                    cn_meeting = false,
-                    in_meeting = false,
-                    join_before_host = true,
-                    mute_upon_entry = true,
-                    watermark = false,
-                    use_pmi = false,
-                    approval_type = CreateMeetingRequest.MeetingSettings.ApprovalType.automaticallyApprove,
-                    audio = CreateMeetingRequest.MeetingSettings.Audio.both,
-                    auto_recording = CreateMeetingRequest.MeetingSettings.AutoRecording.local,
+                    host_video = settings.zoomMeeting.hostVideo,
+                    participant_video = settings.zoomMeeting.participantVideo,
+                    cn_meeting = settings.zoomMeeting.cnMeeting,
+                    in_meeting = settings.zoomMeeting.inMeeting,
+                    join_before_host = settings.zoomMeeting.joinBeforeHost,
+                    mute_upon_entry = settings.zoomMeeting.muteUponEntry,
+                    watermark = settings.zoomMeeting.watermark,
+                    use_pmi = settings.zoomMeeting.usePmi,
+                    approval_type = settings.zoomMeeting.approvalType,
+                    audio = settings.zoomMeeting.audio,
+                    auto_recording = settings.zoomMeeting.autoRecording,
                 )
                 val request = CreateMeetingRequest(
-                    topic = meeting?.subject,
-                    agenda = meeting?.description,
-                    type = CreateMeetingRequest.MeetingType.scheduledMeeting,
-                    start_time = meeting?.startTime,
-                    duration = meeting?.duration?.toMinutes(),
+                    topic = icsMeeting.subject,
+                    agenda = icsMeeting.description,
+                    type = CreateMeetingRequest.MeetingType.ScheduledMeeting,
+                    start_time = icsMeeting.startTime,
+                    duration = icsMeeting.duration.toMinutes(),
                     password = zoomPassword,
                     settings = meetingSettings,
                 )
@@ -64,13 +62,23 @@ class Main {
                     logger.info("Meeting created")
                     logger.info("start time: ${toLocal(response.start_time)}")
                     logger.info("Response: $response")
+
+                    val zoomMeeting = ZoomMeeting(
+                        icsMeeting.subject,
+                        icsMeeting.description,
+                        response.start_time,
+                        icsMeeting.duration,
+                        response.join_url,
+                        icsMeeting.attendees,
+                    )
+
+                    mailboxManager.sendMessage(zoomMeeting)
                 } catch (e: ClientException) {
                     e.printStackTrace()
                     logger.error("4xx response calling MeetingsApi#meetingCreate")
                 } catch (e: ServerException) {
                     e.printStackTrace()
                     logger.error("5xx response calling MeetingsApi#meetingCreate")
-
                 } catch (e: Exception) {
                     logger.error("Exception: $e")
                     e.printStackTrace()
