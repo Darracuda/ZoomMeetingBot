@@ -15,12 +15,15 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.StringReader
 import java.time.Duration
+import java.time.ZonedDateTime
 
 class IcsFileManager(private val attachment: Attachment) {
+
     fun getMeeting(): IcsMeeting? {
         val logger: Logger = LoggerFactory.getLogger(Main::class.java)
 
         if (!attachment.name.endsWith(".ics", ignoreCase = true)) {
+            //logger.info("This message does not contain .ics file attachment")
             return null
         }
 
@@ -46,7 +49,7 @@ class IcsFileManager(private val attachment: Attachment) {
                 Duration.ofMinutes(dur.minutes.toLong()) +
                 Duration.ofHours(dur.hours.toLong())
 
-         val startDateTime = event.startDate.date.toInstant()
+         val startDateTime = event.startDate?.date?.toInstant()
         val meeting = IcsMeeting(subject, description, startDateTime, duration, organizer, attendees)
         logger.info("Received meeting info from .ics file complete")
         logger.info("Meeting subject: $subject, description: $description, start time: ${toLocal(startDateTime)}, duration: $organizer, attendees: $attendees")
