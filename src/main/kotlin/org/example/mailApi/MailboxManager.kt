@@ -16,7 +16,7 @@ import javax.mail.search.FlagTerm
 
 class MailboxManager(private val settingsManager: SettingsManager){
     private val logger: Logger = LoggerFactory.getLogger(Main::class.java)
-    private val settingsFile = File(javaClass.classLoader.getResource("config.properties").file)
+    val settingsFile = File("/opt/meeting-bot/config.properties")
 
     fun sendMessage(zoomMeeting: ZoomMeeting){
         val prop = Properties()
@@ -47,8 +47,13 @@ class MailboxManager(private val settingsManager: SettingsManager){
                 Message.RecipientType.CC,
                 emailAddressesToCC.map { a -> InternetAddress(a) }.toTypedArray()
             )
-            msg.subject = emailSubject
-            msg.setText("$emailText\n Join Url: $joinUrl")
+            if (emailSubject!=null)
+                msg.subject = emailSubject
+            val sb = StringBuilder()
+            if (emailText!=null)
+                sb.append("$emailText\n")
+            sb.append("Join Url: $joinUrl")
+            msg.setText(sb.toString())
             msg.sentDate = Date()
             val t = session.getTransport("smtp") as SMTPTransport
             t.connect(smtpHost, smtpLogin, smtpPassword)
@@ -104,6 +109,7 @@ class MailboxManager(private val settingsManager: SettingsManager){
         properties["mail.imap.socketFactory.port"] = port
         properties["mail.mime.base64.ignoreerrors"] = "true"
         properties["mail.imap.partialfetch"] = "true"
+        properties["mail.smtp.ssl.enable"] = "true"
 
         return Session.getInstance(properties)
     }

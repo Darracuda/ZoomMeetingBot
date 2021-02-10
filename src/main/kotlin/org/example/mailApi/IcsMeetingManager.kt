@@ -14,23 +14,21 @@ class IcsMeetingManager(private val mailboxManager: MailboxManager) {
         logger.info("Received $unreadEmailCount new email messages")
         val meetings = mutableListOf<IcsMeeting>()
         for (message in messages) {
-            val attachmentManager = AttachmentManager(message)
-            val attachments = attachmentManager.getAttachments()
-            attachments.forEach{
-                val icsFileManager = IcsFileManager(it)
+            val calendarManager = IcsCalendarManager(message)
+            val calendars = calendarManager.getCalendars()
+            calendars.forEach{
+                val analyzer = IcsCalendarAnalyzer(it)
                 try {
-                    logger.info("Started attachment analysis in ${message.messageNumber} message...")
-                    val meeting = icsFileManager.getMeeting()
-                    if(meeting != null) {
-                        meetings.add(meeting)
-                    }
+                    logger.info("Started calendar analysis in ${message.messageNumber} message...")
+                    val meeting = analyzer.getMeeting()
+                    meetings.add(meeting)
                 } catch (ex: Exception){
-                    println(ex)
+                    logger.info("Exception:", ex)
                 }
             }
             message.setFlag(Flags.Flag.SEEN, true)
         }
-        logger.info("Found ${meetings.size} .ics file(s)")
+        logger.info("Found ${meetings.size} calendar(s)")
         return meetings
     }
 }

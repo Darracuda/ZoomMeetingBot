@@ -19,7 +19,7 @@ class Main {
             val logger: Logger = LoggerFactory.getLogger(Main::class.java)
             logger.info("Program started")
 
-            val settingsFile = File(javaClass.classLoader.getResource("config.properties").file)
+            val settingsFile = File("/opt/meeting-bot/config.properties")
             val settings = SettingsManager.create(settingsFile)
 
             val zoomLogin = settings.zoom.login
@@ -75,16 +75,14 @@ class Main {
 
                         mailboxManager.sendMessage(zoomMeeting)
                     } catch (e: ClientException) {
-                        e.printStackTrace()
-                        logger.error("4xx response calling MeetingsApi#meetingCreate")
+                        logger.error("4xx response calling MeetingsApi#meetingCreate", e)
                     } catch (e: ServerException) {
-                        e.printStackTrace()
-                        logger.error("5xx response calling MeetingsApi#meetingCreate")
+                        logger.error("5xx response calling MeetingsApi#meetingCreate", e)
                     } catch (e: Exception) {
-                        logger.error("Exception: $e")
-                        e.printStackTrace()
+                        logger.error("Exception: ", e)
                     }
                 }
+                Thread.sleep(30000)
             }
         }
 

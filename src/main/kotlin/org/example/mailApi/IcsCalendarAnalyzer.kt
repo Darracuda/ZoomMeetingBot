@@ -16,23 +16,19 @@ import org.slf4j.LoggerFactory
 import java.io.StringReader
 import java.time.Duration
 
-class IcsFileManager(private val attachment: Attachment) {
-    fun getMeeting(): IcsMeeting? {
+class IcsCalendarAnalyzer(private val icsCalendar: IcsCalendar) {
+    fun getMeeting(): IcsMeeting {
         val logger: Logger = LoggerFactory.getLogger(Main::class.java)
-
-        if (!attachment.name.endsWith(".ics", ignoreCase = true)) {
-            return null
-        }
 
         logger.info("This message contains .ics file attachment. Started receiving meeting info ...")
         System.setProperty("net.fortuna.ical4j.timezone.cache.impl", MapTimeZoneCache::class.java.name)
-        val content = String(attachment.content, charset("UTF-8"))
+        val content = String(icsCalendar.content, charset("UTF-8"))
         val reader = StringReader(content)
         val builder = CalendarBuilder()
         val calendar = builder.build(reader)
         val event = calendar.getComponents<VEvent>(Component.VEVENT).single()
-        val description = event.description.value
-        val subject = event.summary.value
+        val description = event.description?.value
+        val subject = event.summary?.value
         val attendees = event
             .getProperties<Attendee>(Property.ATTENDEE)
             .filter { it.calAddress.scheme.equals("MAILTO", ignoreCase = true) }

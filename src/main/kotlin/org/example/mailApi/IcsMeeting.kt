@@ -5,7 +5,7 @@ import java.time.Instant
 
 
 class IcsMeeting(
-    var subject: String,
+    var subject: String?,
     var description: String?,
     var startTime: Instant,
     var duration: Duration,
